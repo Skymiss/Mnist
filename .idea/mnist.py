@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-from tensorflow.contrib.tensorboard.plugins import projector
 
 mnist = input_data.read_data_sets("MNIST_data", one_hot=True)
 n_inputs = 28   # 输入一行，一行共有28个数据
@@ -32,7 +31,7 @@ biases = tf.Variable(tf.constant(0.1, shape=[n_class]))
 
 def RNN(X, weights, biases):
     inputs = tf.reshape(X, [-1, max_time, n_inputs])
-    lstm_cell = tf.contrib.rnn.core_rnn_cell.BasicLSTMCell(lstm_size)
+    lstm_cell = tf.contrib.rnn.BasicLSTMCell(lstm_size)
     outputs, final_state = tf.nn.dynamic_rnn(lstm_cell, inputs, dtype=tf.float32)
     results = tf.nn.softmax(tf.matmul(final_state[1], weights) + biases)
     return results
@@ -67,7 +66,7 @@ with tf.name_scope('Accuracy'):
 
 with tf.Session() as sess:
     sess.run(init)
-    for epoch in range(6):
+    for epoch in range(21):
         for batch in range(n_batch):
             batch_xs, batch_ys = mnist.train.next_batch(batch_size)
             sess.run(train_step,feed_dict={x: batch_xs, y: batch_ys})
@@ -76,12 +75,3 @@ with tf.Session() as sess:
         #learning_rate = sess.run(lr)
         test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels})
         print("Iter " + str(epoch) + " Testing Accuracy " + str(test_acc))
-
-
-
-
-
-
-
-
-
