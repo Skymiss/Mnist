@@ -1,21 +1,21 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
-#from tensorflow.contrib.tensorboard.plugins import projector
+from tensorflow.contrib.tensorboard.plugins import projector
 
 mnist = input_data.read_data_sets("MNIST_data", one_hot=True)
 # 批次大小
 batch_size = 100
 # 批次数量
 n_batch = mnist.train.num_examples // batch_size
-# # 运行次数
-# max_steps = 1001
-# # 目录
-# DIR = "C:/Users/Shinelon/PycharmProjects/mnist/.idea/"
-# # 图片张数
-# image_num = 3000
-#
-# # 定义会话
-# sess = tf.Session()
+# 运行次数
+max_steps = 3001
+# 目录
+DIR = "C:/Users/Shinelon/PycharmProjects/mnist/.idea/"
+# 图片张数
+image_num = 3000
+
+# 定义会话
+sess = tf.Session()
 
 # 初始化权值
 def weight_variable(shape):
@@ -36,28 +36,28 @@ def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
 # 载入图片
-#embedding = tf.Variable(tf.stack(mnist.test.images[:image_num]), trainable=False, name='embedding')
+embedding = tf.Variable(tf.stack(mnist.test.images[:image_num]), trainable=False, name='embedding')
 
 # 参数统计
-# def variable_summaries(var):
-#     with tf.name_scope('summaries'):
-#         mean = tf.reduce_mean(var)
-#         tf.summary.scalar('mean', mean)
-#         with tf.name_scope('stddev'):
-#             stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-#         tf.summary.scalar('stddev', stddev)
-#         tf.summary.scalar('max', tf.reduce_max(var))
-#         tf.summary.scalar('min', tf.reduce_min(var))
-#         tf.summary.histogram('histogram', var)
+def variable_summaries(var):
+    with tf.name_scope('summaries'):
+        mean = tf.reduce_mean(var)
+        tf.summary.scalar('mean', mean)
+        with tf.name_scope('stddev'):
+            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar('stddev', stddev)
+        tf.summary.scalar('max', tf.reduce_max(var))
+        tf.summary.scalar('min', tf.reduce_min(var))
+        tf.summary.histogram('histogram', var)
 
 with tf.name_scope('input'):
     # 定义两个placeholder
     x = tf.placeholder(tf.float32, [None, 784], name="x_put")
     y = tf.placeholder(tf.float32, [None, 10], name="y_put")
 
-# with tf.name_scope('input_reshape'):
-#     image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
-#     tf.summary.image('input', image_shaped_input, 10)
+with tf.name_scope('input_reshape'):
+    image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
+    tf.summary.image('input', image_shaped_input, 10)
 
 # 改变x的结构转为4D的向量[batch_size, in_height, in_width, in_channels]
 x_image = tf.reshape(x, [-1, 28, 28, 1])
@@ -150,8 +150,8 @@ with tf.name_scope('train'):
 
 
 # 初始化
-# init = tf.global_variables_initializer()
-# sess.run(init)
+init = tf.global_variables_initializer()
+sess.run(init)
 
 # 结果存放在一个布尔型变量中
 with tf.name_scope('Accuracy'):
@@ -161,36 +161,36 @@ with tf.name_scope('Accuracy'):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         #tf.summary.scalar('accuracy', accuracy)
 
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
-    for epoch in range(21):
-        for batch in range(n_batch):
-            batch_xs, batch_ys = mnist.train.next_batch(batch_size)
-            sess.run(train_step, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.7})
-
-        test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, keep_prob: 1.0})
-        print("Iter " + str(epoch) + " Testing Accuracy " + str(test_acc))
-
-# # 产生metadata文件
-# # if tf.gfile.Exists(DIR + 'projector/projector/metadata.tsv'):
-# #     tf.gfile.DeleteRecursively(DIR + 'projector/projector/metadata.tsv')
-# with open(DIR + 'projector/projector/metadata.tsv', 'w') as f:
-#     labels = sess.run(tf.argmax(mnist.test.labels[:], 1))
-#     for i in range(image_num):
-#         f.write(str(labels[i]) + '\n')
+# with tf.Session() as sess:
+#     sess.run(tf.global_variables_initializer())
+#     for epoch in range(21):
+#         for batch in range(n_batch):
+#             batch_xs, batch_ys = mnist.train.next_batch(batch_size)
+#             sess.run(train_step, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.7})
 #
-# # 合并所有的summary
-# merged = tf.summary.merge_all()
+#         test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, keep_prob: 1.0})
+#         print("Iter " + str(epoch) + " Testing Accuracy " + str(test_acc))
 
-# projector_writer = tf.summary.FileWriter(DIR + 'projector/projector', sess.graph)
-# saver = tf.train.Saver()
-# config = projector.ProjectorConfig()
-# embed = config.embeddings.add()
-# embed.tensor_name = embedding.name
-# embed.metadata_path = DIR + 'projector/projector/metadata.tsv'
-# embed.sprite.image_path = DIR + 'projector/data/mnist_10k_sprite.png'
-# embed.sprite.single_image_dim.extend([28, 28])
-# projector.visualize_embeddings(projector_writer, config)
+# 产生metadata文件
+# if tf.gfile.Exists(DIR + 'projector/projector/metadata.tsv'):
+#     tf.gfile.DeleteRecursively(DIR + 'projector/projector/metadata.tsv')
+with open(DIR + 'projector/projector/metadata.tsv', 'w') as f:
+    labels = sess.run(tf.argmax(mnist.test.labels[:], 1))
+    for i in range(image_num):
+        f.write(str(labels[i]) + '\n')
+
+# 合并所有的summary
+merged = tf.summary.merge_all()
+
+projector_writer = tf.summary.FileWriter(DIR + 'projector/projector', sess.graph)
+saver = tf.train.Saver()
+config = projector.ProjectorConfig()
+embed = config.embeddings.add()
+embed.tensor_name = embedding.name
+embed.metadata_path = DIR + 'projector/projector/metadata.tsv'
+embed.sprite.image_path = DIR + 'projector/data/mnist_10k_sprite.png'
+embed.sprite.single_image_dim.extend([28, 28])
+projector.visualize_embeddings(projector_writer, config)
 
 # with tf.Session() as sess:
 #     sess.run(init)
@@ -207,18 +207,18 @@ with tf.Session() as sess:
 #         print("Iter " + str(epoch) + " Testing Accuracy " + str(test_acc) + " Learning Rate " + str(learning_rate))
 
 
-# for i in range(max_steps):
-#     # 每个批次100
-#     batch_xs, batch_ys = mnist.train.next_batch(100)
-#     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-#     run_metadata = tf.RunMetadata()
-#     summary, _ = sess.run([merged, train_step], feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.0}, options=run_options, run_metadata=run_metadata)
-#     projector_writer.add_run_metadata(run_metadata, 'step%03d' % i)
-#     projector_writer.add_summary(summary, i)
-#     if i % 100 ==0:
-#         test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, keep_prob: 1.0})
-#         print("Iter " + str(i) + " Testing Accuracy= " + str(test_acc))
-#
-# saver.save(sess, DIR + 'projector/projector/a_model.ckpt', global_step=max_steps)
-# projector_writer.close()
-# sess.close()
+for i in range(max_steps):
+    # 每个批次100
+    batch_xs, batch_ys = mnist.train.next_batch(100)
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
+    summary, _ = sess.run([merged, train_step], feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.0}, options=run_options, run_metadata=run_metadata)
+    projector_writer.add_run_metadata(run_metadata, 'step%03d' % i)
+    projector_writer.add_summary(summary, i)
+    if i % 100 ==0:
+        test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, keep_prob: 1.0})
+        print("Iter " + str(i) + " Testing Accuracy= " + str(test_acc))
+
+saver.save(sess, DIR + 'projector/projector/a_model.ckpt', global_step=max_steps)
+projector_writer.close()
+sess.close()
