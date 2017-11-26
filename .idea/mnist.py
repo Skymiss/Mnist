@@ -55,13 +55,10 @@ with tf.name_scope('input'):
     x = tf.placeholder(tf.float32, [None, 784], name="x_put")
     y = tf.placeholder(tf.float32, [None, 10], name="y_put")
 
-with tf.name_scope('input_reshape'):
-    image_shaped_input = tf.reshape(x, [-1, 28, 28, 1])
-    tf.summary.image('input', image_shaped_input, 10)
-
 # 改变x的结构转为4D的向量[batch_size, in_height, in_width, in_channels]
-x_image = tf.reshape(x, [-1, 28, 28, 1])
-
+with tf.name_scope('input_reshape'):
+    x_image = tf.reshape(x, [-1, 28, 28, 1])
+    tf.summary.image('input', x_image, 10)
 
 # lr = tf.Variable(0.001, dtype=tf.float32)
 
@@ -70,8 +67,10 @@ with tf.name_scope('layer'):
     with tf.name_scope('conv1'):
         with tf.name_scope('W_conv1'):
             W_conv1 = weight_variable([5, 5, 1, 32])
+            variable_summaries(W_conv1)
         with tf.name_scope('b_conv1'):
             b_conv1 = bias_variable([32])
+            variable_summaries(b_conv1)
 
         # x_image和权值向量进行卷积，再加上偏置，然后用relu函数进行激活
         with tf.name_scope('h_conv1'):
@@ -83,8 +82,10 @@ with tf.name_scope('layer'):
     with tf.name_scope('conv2'):
         with tf.name_scope('W_conv2'):
             W_conv2 = weight_variable([5, 5 , 32, 64])
+            variable_summaries(W_conv2)
         with tf.name_scope('b_conv2'):
             b_conv2 = bias_variable([64])
+            variable_summaries(b_conv2)
 
         # h_pool1和权值进行卷积，再加上偏置，然后用relu函数进行激活
         with tf.name_scope('h_conv2'):
@@ -92,18 +93,20 @@ with tf.name_scope('layer'):
     with tf.name_scope('max_pool2'):
         h_pool2 = max_pool_2x2(h_conv2)
 
+    # 把池化层2的输出扁平化为1维
+    with tf.name_scope('flatten'):
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
+
     # 初始化第一个全连接层的权值
     with tf.name_scope('full_connect1'):
         with tf.name_scope('W_fc1'):
             W_fc1 = weight_variable([7 * 7 * 64, 1024])
+            variable_summaries(W_fc1)
         with tf.name_scope('b_fc1'):
             b_fc1 = bias_variable([1024])
+            variable_summaries(b_fc1)
         with tf.name_scope('h_fc1'):
             h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
-
-    # 把池化层2的输出扁平化为1维
-    with tf.name_scope('flatten'):
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
 
     # keep_prob控制神经元的激活
     with tf.name_scope('dropout'):
@@ -116,8 +119,10 @@ with tf.name_scope('layer'):
     with tf.name_scope('full_connect2'):
         with tf.name_scope('W_fc2'):
             W_fc2 = weight_variable([1024, 10])
+            variable_summaries(W_fc2)
         with tf.name_scope('b_fc2'):
             b_fc2 = bias_variable([10])
+            variable_summaries(b_fc2)
 
         # 计算输出
         with tf.name_scope('prediction'):
@@ -173,8 +178,9 @@ with tf.name_scope('train'):
 
 
 # 初始化
-init = tf.global_variables_initializer()
-sess.run(init)
+with tf.name_scope('init'):
+    init = tf.global_variables_initializer()
+    sess.run(init)
 
 # 结果存放在一个布尔型变量中
 with tf.name_scope('Accuracy'):
@@ -182,7 +188,7 @@ with tf.name_scope('Accuracy'):
         correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(prediction, 1))
     with tf.name_scope('accuracy'):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        #tf.summary.scalar('accuracy', accuracy)
+        tf.summary.scalar('accuracy', accuracy)
 
 # with tf.Session() as sess:
 #     sess.run(tf.global_variables_initializer())
