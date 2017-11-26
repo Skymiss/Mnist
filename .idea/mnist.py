@@ -66,39 +66,62 @@ x_image = tf.reshape(x, [-1, 28, 28, 1])
 # lr = tf.Variable(0.001, dtype=tf.float32)
 
 # 初始化第一个卷积层的权值和偏重
-W_conv1 = weight_variable([5, 5, 1, 32])
-b_conv1 = bias_variable([32])
+with tf.name_scope('layer'):
+    with tf.name_scope('conv1'):
+        with tf.name_scope('W_conv1'):
+            W_conv1 = weight_variable([5, 5, 1, 32])
+        with tf.name_scope('b_conv1'):
+            b_conv1 = bias_variable([32])
 
-# x_image和权值向量进行卷积，再加上偏置，然后用relu函数进行激活
-h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
-h_pool1 = max_pool_2x2(h_conv1)
+        # x_image和权值向量进行卷积，再加上偏置，然后用relu函数进行激活
+        with tf.name_scope('h_conv1'):
+            h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+    with tf.name_scope('max_pool1'):
+        h_pool1 = max_pool_2x2(h_conv1)
 
-# 初始化第二个卷积层的权值和偏置
-W_conv2 = weight_variable([5, 5 , 32, 64])
-b_conv2 = bias_variable([64])
+    # 初始化第二个卷积层的权值和偏置
+    with tf.name_scope('conv2'):
+        with tf.name_scope('W_conv2'):
+            W_conv2 = weight_variable([5, 5 , 32, 64])
+        with tf.name_scope('b_conv2'):
+            b_conv2 = bias_variable([64])
 
-# h_pool1和权值进行卷积，再加上偏置，然后用relu函数进行激活
-h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
-h_pool2 = max_pool_2x2(h_conv2)
+        # h_pool1和权值进行卷积，再加上偏置，然后用relu函数进行激活
+        with tf.name_scope('h_conv2'):
+            h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+    with tf.name_scope('max_pool2'):
+        h_pool2 = max_pool_2x2(h_conv2)
 
-# 初始化第一个全连接层的权值
-W_fc1 = weight_variable([7 * 7 * 64, 1024])
-b_fc1 = bias_variable([1024])
+    # 初始化第一个全连接层的权值
+    with tf.name_scope('full_connect1'):
+        with tf.name_scope('W_fc1'):
+            W_fc1 = weight_variable([7 * 7 * 64, 1024])
+        with tf.name_scope('b_fc1'):
+            b_fc1 = bias_variable([1024])
+        with tf.name_scope('h_fc1'):
+            h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
-# 把池化层2的输出扁平化为1维
-h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
-h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
+    # 把池化层2的输出扁平化为1维
+    with tf.name_scope('flatten'):
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 7 * 7 * 64])
 
-# keep_prob控制神经元的激活
-keep_prob = tf.placeholder(tf.float32)
-h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
+    # keep_prob控制神经元的激活
+    with tf.name_scope('dropout'):
+        with tf.name_scope('keep_prob'):
+            keep_prob = tf.placeholder(tf.float32)
+        with tf.name_scope('h_fc1_drop'):
+            h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
-# 初始化第二个全连接层
-W_fc2 = weight_variable([1024, 10])
-b_fc2 = bias_variable([10])
+    # 初始化第二个全连接层
+    with tf.name_scope('full_connect2'):
+        with tf.name_scope('W_fc2'):
+            W_fc2 = weight_variable([1024, 10])
+        with tf.name_scope('b_fc2'):
+            b_fc2 = bias_variable([10])
 
-# 计算输出
-prediction = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
+        # 计算输出
+        with tf.name_scope('prediction'):
+            prediction = tf.nn.softmax(tf.matmul(h_fc1_drop, W_fc2) + b_fc2)
 
 # with tf.name_scope('layer'):
 #     #创建一个神经网络
