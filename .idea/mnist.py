@@ -244,9 +244,11 @@ for i in range(max_steps):
     summary, _ = sess.run([merged, train_step], feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.0}, options=run_options, run_metadata=run_metadata)
     projector_writer.add_run_metadata(run_metadata, 'step%03d' % i)
     projector_writer.add_summary(summary, i)
-    if i % 100 ==0:
+    if i % 100 == 0:
+        train_acc = sess.run(accuracy, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 1.0})
         test_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y: mnist.test.labels, keep_prob: 1.0})
-        print("Iter " + str(i) + " Testing Accuracy= " + str(test_acc))
+        print("Iter " + str(i) + " Testing Accuracy= " + str(test_acc) + " Train Accuracy " + str(train_acc))
+
 
 saver.save(sess, DIR + 'projector/projector/a_model.ckpt', global_step=max_steps)
 projector_writer.close()
